@@ -14,16 +14,43 @@ import {
   FormMessage,
 } from "./form";
 import { Input } from "./input";
+import { Textarea } from "./textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./select";
+/*
+const items = [
+  {
+    id: "first",
+    label: "First",
+  },
+  {
+    id: "second",
+    label: "Second",
+  },
+  {
+    id: "third",
+    label: "Third",
+  },
+] as const
+ */
 
 const formSchema = z.object({
   username: z
     .string()
     .min(2, { message: "Username must be at least 2 characters." })
     .max(50, { message: "Username must be less than 50 characters." }),
-  firstname: z
+  textexample: z
     .string()
-    .min(2, { message: "First name must be at least 2 characters." })
-    .max(20, { message: "Username must be less than 20 characters." }),
+    .max(200, { message: "Text must be less than 200 characters." }),
+  gender: z.string(),
+  items: z.array(z.string()).refine((value) => value.some((item) => item), {
+    message: "You have to select at least one item.",
+  }),
 });
 
 export function ProfileForm() {
@@ -31,7 +58,9 @@ export function ProfileForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
-      firstname: "",
+      textexample: "",
+      gender: "",
+      items: ["prva"],
     },
   });
 
@@ -58,22 +87,43 @@ export function ProfileForm() {
             </FormItem>
           )}
         />
-         <FormField
+        <FormField
           control={form.control}
-          name="firstname"
+          name="textexample"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First name</FormLabel>
+              <FormLabel>Text Area</FormLabel>
               <FormControl>
-                <Input placeholder="Type your name" {...field} />
+                <Textarea placeholder="Type your text" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
+              <FormDescription>This is your text example.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="gender"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Selection</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select gender" {...field} />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormDescription>This is your gender.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <Button type="submit">Submit</Button>
       </form>
     </Form>
