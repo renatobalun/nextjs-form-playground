@@ -22,7 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./select";
-/*
+import { Checkbox } from "./checkbox";
+import { RadioGroup, RadioGroupItem } from "./radio-group";
+
 const items = [
   {
     id: "first",
@@ -36,8 +38,7 @@ const items = [
     id: "third",
     label: "Third",
   },
-] as const
- */
+] as const;
 
 const formSchema = z.object({
   username: z
@@ -51,6 +52,9 @@ const formSchema = z.object({
   items: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one item.",
   }),
+  type: z.enum(["gold", "platinum", "diamond"], {
+    error: "You must select one option.",
+  }),
 });
 
 export function ProfileForm() {
@@ -60,7 +64,8 @@ export function ProfileForm() {
       username: "",
       textexample: "",
       gender: "",
-      items: ["prva"],
+      items: ["first"],
+      type: "gold",
     },
   });
 
@@ -123,7 +128,95 @@ export function ProfileForm() {
             </FormItem>
           )}
         />
-        
+
+        <FormField
+          control={form.control}
+          name="items"
+          render={() => (
+            <FormItem>
+              <div className="mb-4">
+                <FormLabel className="text-base">Options</FormLabel>
+                <FormDescription>Select one or more option.</FormDescription>
+              </div>
+              {items.map((item) => (
+                <FormField
+                  key={item.id}
+                  control={form.control}
+                  name="items"
+                  render={({ field }) => {
+                    return (
+                      <FormItem
+                        key={item.id}
+                        className="flex flex-row items-center gap-2"
+                      >
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value?.includes(item.id)}
+                            onCheckedChange={(checked) => {
+                              return checked
+                                ? field.onChange([...field.value, item.id])
+                                : field.onChange(
+                                    field.value?.filter(
+                                      (value) => value !== item.id
+                                    )
+                                  );
+                            }}
+                          />
+                        </FormControl>
+                        <FormLabel className="text-sm font-normal">
+                          {item.label}
+                        </FormLabel>
+                      </FormItem>
+                    );
+                  }}
+                />
+              ))}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+         <FormField
+          control={form.control}
+          name="type"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Choose your plan</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col"
+                >
+                  <FormItem className="flex items-center gap-3">
+                    <FormControl>
+                      <RadioGroupItem value="gold" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Gold
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center gap-3">
+                    <FormControl>
+                      <RadioGroupItem value="platinum" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Platinum
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center gap-3">
+                    <FormControl>
+                      <RadioGroupItem value="diamond" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Diamond</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <Button type="submit">Submit</Button>
       </form>
     </Form>
