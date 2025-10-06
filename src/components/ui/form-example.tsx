@@ -45,15 +45,20 @@ const formSchema = z.object({
     .string()
     .min(2, { message: "Username must be at least 2 characters." })
     .max(50, { message: "Username must be less than 50 characters." }),
-  textexample: z
+  about: z
     .string()
     .max(200, { message: "Text must be less than 200 characters." }),
-  gender: z.string(),
+  gender: z.string({
+    error: "Please select your gender.",
+  }),
   items: z.array(z.string()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one item.",
   }),
   type: z.enum(["gold", "platinum", "diamond"], {
     error: "You must select one option.",
+  }),
+  phone: z.e164({
+    error: "Invalid phone number.",
   }),
 });
 
@@ -62,10 +67,9 @@ export function ProfileForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
-      textexample: "",
-      gender: "",
+      about: "",
       items: ["first"],
-      type: "gold",
+      phone: "",
     },
   });
 
@@ -94,14 +98,14 @@ export function ProfileForm() {
         />
         <FormField
           control={form.control}
-          name="textexample"
+          name="about"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Text Area</FormLabel>
+              <FormLabel>About you</FormLabel>
               <FormControl>
                 <Textarea placeholder="Type your text" {...field} />
               </FormControl>
-              <FormDescription>This is your text example.</FormDescription>
+              <FormDescription>Tell something about yourself.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -123,7 +127,7 @@ export function ProfileForm() {
                   <SelectItem value="female">Female</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>This is your gender.</FormDescription>
+              <FormDescription>Pick your gender.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -176,7 +180,7 @@ export function ProfileForm() {
           )}
         />
 
-         <FormField
+        <FormField
           control={form.control}
           name="type"
           render={({ field }) => (
@@ -192,17 +196,13 @@ export function ProfileForm() {
                     <FormControl>
                       <RadioGroupItem value="gold" />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      Gold
-                    </FormLabel>
+                    <FormLabel className="font-normal">Gold</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center gap-3">
                     <FormControl>
                       <RadioGroupItem value="platinum" />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      Platinum
-                    </FormLabel>
+                    <FormLabel className="font-normal">Platinum</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center gap-3">
                     <FormControl>
@@ -212,6 +212,21 @@ export function ProfileForm() {
                   </FormItem>
                 </RadioGroup>
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone number</FormLabel>
+              <FormControl>
+                <Input placeholder="Type your phone number." {...field} />
+              </FormControl>
+              <FormDescription>This is your phone number.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
