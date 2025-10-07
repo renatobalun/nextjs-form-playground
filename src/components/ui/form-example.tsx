@@ -24,6 +24,11 @@ import {
 } from "./select";
 import { Checkbox } from "./checkbox";
 import { RadioGroup, RadioGroupItem } from "./radio-group";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { Calendar } from "./calendar";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const items = [
   {
@@ -60,6 +65,9 @@ const formSchema = z.object({
   phone: z.e164({
     error: "Invalid phone number.",
   }),
+  dob: z.date({
+    error: "A date of birth is required.",
+  }),
 });
 
 export function ProfileForm() {
@@ -73,8 +81,32 @@ export function ProfileForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      console.log(JSON.stringify(values));
+
+      const res = await fetch("api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application-json",
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Error saving user", error);
+        alert("Error saving user");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("Saved user:", data);
+      alert("User saved!");
+    } catch(err) {
+      console.error(err);
+      alert("Error");
+    }
   }
 
   return (
@@ -115,7 +147,7 @@ export function ProfileForm() {
           name="gender"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Selection</FormLabel>
+              <FormLabel>Gender</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -227,6 +259,51 @@ export function ProfileForm() {
                 <Input placeholder="Type your phone number." {...field} />
               </FormControl>
               <FormDescription>This is your phone number.</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="dob"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Date of birth</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-[240px] pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    captionLayout="dropdown"
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormDescription>
+                Your date of birth is used to calculate your age.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
